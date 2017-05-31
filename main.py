@@ -9,7 +9,7 @@ mask, circles, rois = tslsr.tslsr(image)
 plt.figure(1)
 plt.subplot(221)
 roi = cv2.cvtColor(rois[0], cv2.COLOR_BGR2RGB)
-plt.imshow(roi)
+plt.imshow(roi.copy())
 
 plt.subplot(222)
 roi_hsv = cv2.cvtColor(roi, cv2.COLOR_RGB2HSV)
