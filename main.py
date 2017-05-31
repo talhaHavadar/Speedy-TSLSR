@@ -1,39 +1,41 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-from tslsr import tslsr
+from tslsr import tslsr, utils
 
 image = cv2.imread("../../images/speed-1.jpg", 1)
 mask, circles, rois = tslsr.tslsr(image)
+plt.figure(2)
+plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 
-plt.figure(1)
-plt.subplot(221)
-roi = cv2.cvtColor(rois[0], cv2.COLOR_BGR2RGB)
-plt.imshow(roi)
+if len(rois) > 0:
+    
+    plt.figure(1)
+    plt.subplot(221)
+    roi = cv2.cvtColor(rois[0], cv2.COLOR_BGR2RGB)
+    plt.imshow(roi)
 
-plt.subplot(222)
-roi_hsv = cv2.cvtColor(roi, cv2.COLOR_RGB2HSV)
+    plt.subplot(224)
+    roi_hsv = cv2.cvtColor(roi, cv2.COLOR_RGB2HSV)
+    plt.imshow(roi_hsv, cmap="hsv")
 
-mask1 = cv2.inRange(roi_hsv, np.array([0, 0, 0]), np.array([180, 255, 50]))
-mask1 = cv2.morphologyEx(mask1, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3)))
-mask1 = cv2.GaussianBlur(mask1, (5, 5), 0)
-mask1 = cv2.Canny(mask1, 100, 200)
-mask1 = cv2.morphologyEx(mask1, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)))
-plt.imshow(mask1, cmap="gray")
+    mroi, rects = tslsr.__bound_contours(roi)
+    digits = tslsr.extractDigits(roi)
 
-im2, cnts, hierarchy = cv2.findContours(mask1.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-cnts = sorted(cnts, key = cv2.contourArea, reverse = True)[:5]
+    plt.subplot(222)
+    plt.imshow(mroi)
 
-for c in cnts:
-    peri = cv2.arcLength(c, True)
-    approx = cv2.approxPolyDP(c, 0.02 * peri, True)
-    x, y, w, h = cv2.boundingRect(approx)
-    print("ApproxLen:", len(approx), "rect:", (x,y,w,h))
-    # cv2.drawContours(roi, [approx], -1, (0, 255, 0), 1)
-    if h > 15:
-        cv2.rectangle(roi, (x, y), (x+w, y+h), (0, 255, 0), 1);
+    croi = roi.copy()
+    for (x, y, w, h) in utils.eliminate_child_rects(rects):
+        cv2.rectangle(croi, (x, y), (x+w, y+h), (0, 255, 0), 1)
 
-plt.subplot(223)
-plt.imshow(roi)
+    plt.subplot(223)
+    plt.imshow(croi)
+
+    plt.figure(3)
+    for i in range(len(digits)):
+        p = int("1" + str(len(digits)) + "" + str(i + 1))
+        plt.subplot(p)
+        plt.imshow(digits[i])
 
 plt.show()
