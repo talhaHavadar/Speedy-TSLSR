@@ -36,13 +36,16 @@ def eliminate_child_rects(rects):
         for j in range(len(rects)):
             r2 = rects[j]
             if is_same_rectangle(r1, r2):
+                print("R1:",r1, "R2:", r2, " same!")
                 continue
             if is_contains_rectangle(rects[i], rects[j]):
+                print(rects[i], "contains", rects[j])
                 if i not in rectDict:
                     rectDict[i] = [rects[j]]
                 else:
                     rectDict[i].append(rects[j])
             elif is_similar_rectangle(r1, r2, 5):
+                print(r1, "is similar to", r2)
                 eliminatedR = None
                 if get_bigger_rect(r1, r2) == r1:
                     index = i
@@ -50,6 +53,7 @@ def eliminate_child_rects(rects):
                 else:
                     index = j
                     eliminatedR = r1
+                print("index:", i, "eliminatedR:", eliminatedR)
                 if index not in rectDict:
                     rectDict[index] = [eliminatedR]
                 else:
@@ -80,7 +84,7 @@ def is_contains_rectangle(r1, r2):
     r2_x, r2_y, r2_x2, r2_y2, r2_w, r2_h = __get_rectangle_with_bounds(r2)
     if r1_x == r2_x and r1_y == r2_y and r1_x2 == r2_x2 and r1_y2 == r2_y2:
         return False
-    return r2_x >= r1_x and r2_y >= r1_y and r2_w * r2_h <= r1_w * r1_h
+    return r2_x >= r1_x and r2_x2 <= r1_x2 and r2_y >= r1_y and r2_y2 <= r1_y2 and r2_w * r2_h <= r1_w * r1_h
 
 def __get_rectangle_with_bounds(rect):
     x, y, w, h = rect

@@ -3,13 +3,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tslsr import tslsr, utils
 
-image = cv2.imread("../../images/speed-1.jpg", 1)
+image = cv2.imread("../../images/speed-2.jpg", 1)
 mask, circles, rois = tslsr.tslsr(image)
 plt.figure(2)
 plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 
 if len(rois) > 0:
-    
+
     plt.figure(1)
     plt.subplot(221)
     roi = cv2.cvtColor(rois[0], cv2.COLOR_BGR2RGB)
