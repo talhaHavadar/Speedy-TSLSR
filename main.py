@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tslsr import tslsr, utils
 
-image = cv2.imread("../../images/speed-2.jpg", 1)
+image = cv2.imread("../../images/speed-5.jpg", 1)
 mask, circles, rois = tslsr.tslsr(image)
 plt.figure(2)
 plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
