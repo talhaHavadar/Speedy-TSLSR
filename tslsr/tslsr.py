@@ -32,7 +32,7 @@ def __extract_sign_roi(image, circle):
         Extracts roi from image and returns the roi
     """
     x, y, r = circle
-    rn = int(r - (r/4.5))
+    rn = int(r - (r/5))
     rect = [(x - rn), (y - rn), (x + rn), (y + rn)]
     return image[rect[1]:rect[3], rect[0]:rect[2]]
 
