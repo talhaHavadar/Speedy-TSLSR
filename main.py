@@ -2,15 +2,16 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 from tslsr import tslsr, utils
+import glob
 
 image = cv2.imread("../../images/speed-2.jpg", 1)
 mask, circles, rois = tslsr.tslsr(image)
-plt.figure(2)
+plt.figure(1)
 plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 
 if len(rois) > 0:
 
-    plt.figure(1)
+    plt.figure(2)
     plt.subplot(221)
     roi = cv2.cvtColor(rois[0], cv2.COLOR_BGR2RGB)
     plt.imshow(roi)
@@ -33,9 +34,21 @@ if len(rois) > 0:
     plt.imshow(croi)
 
     plt.figure(3)
+
+    recognizedDigits = []
+
+    for digit in digits:
+        res = tslsr.recognizeDigit(digit)
+        print("Recoginition res:", res)
+        recognizedDigits.append(res[0])
+
     for i in range(len(digits)):
         p = int("1" + str(len(digits)) + "" + str(i + 1))
+        digit = digits[i].copy()
+        digit = cv2.cvtColor(digit, cv2.COLOR_BGR2GRAY)
+        ret, digit = cv2.threshold(digit, 90, 255, cv2.THRESH_BINARY_INV)
         plt.subplot(p)
-        plt.imshow(digits[i])
+        plt.title("Digit recognized as " + str(recognizedDigits[i]))
+        plt.imshow(digit, cmap="gray")
 
 plt.show()

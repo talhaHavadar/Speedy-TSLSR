@@ -1,6 +1,10 @@
 import cv2
 import numpy as np
 from . import utils
+import glob
+
+REC_METHOD_TEMPLATE_MATCHING = 0
+__DIGIT_TEMPLATES = []
 
 def __findCircles(mask):
     """
@@ -69,11 +73,54 @@ def __bound_contours(roi):
 
 def extractDigits(roi):
     mroi, rects = __bound_contours(roi)
+    rects = utils.eliminate_child_rects(rects)
+    rects = sorted(rects, key= lambda x: x[0])
     digits = []
-    for (x, y, w, h) in utils.eliminate_child_rects(rects):
+    for (x, y, w, h) in rects:
         digits.append(roi[y : y + h, x : x + w])
 
     return digits
+
+def __readDigitTemplates():
+    if len(__DIGIT_TEMPLATES) < 10:
+        # Read the templates
+        for tPath in glob.glob("./tslsr/digits/*.png"):
+            template = cv2.imread(tPath, 0)
+            __DIGIT_TEMPLATES.append(template)
+
+
+def recognizeDigit(digit, method = REC_METHOD_TEMPLATE_MATCHING, threshold= 55):
+    """
+        Finds the best match for the given digit(RGB or gray color scheme). And returns the result and percentage as an integer.
+        @threshold percentage of similarity
+    """
+    __readDigitTemplates()
+    digit = digit.copy()
+    if digit.shape[2] == 3:
+        digit = cv2.cvtColor(digit, cv2.COLOR_RGB2GRAY)
+    ret, digit = cv2.threshold(digit, 90, 255, cv2.THRESH_BINARY_INV)
+    bestDigit = -1
+    if method == REC_METHOD_TEMPLATE_MATCHING:
+        bestMatch = None
+        for i in range(len(__DIGIT_TEMPLATES)):
+            template = __DIGIT_TEMPLATES[i].copy()
+
+            if digit.shape[1] < template.shape[1]:
+                template = cv2.resize(template, (digit.shape[1], digit.shape[0]))
+            else:
+                digit = cv2.resize(digit, (template.shape[1], template.shape[0]))
+
+            result = cv2.matchTemplate(digit, template, cv2.TM_CCORR_NORMED)#cv2.TM_CCOEFF_NORMED)
+            (_, max_val, _, max_loc) = cv2.minMaxLoc(result)
+            if bestMatch is None or max_val > bestMatch:
+                bestMatch = max_val
+                bestDigit = i
+                print("New Best Match:", bestMatch, bestDigit)
+
+    if (bestMatch * 100) >= threshold:
+        return (bestDigit, bestMatch * 100)
+
+    return (-1, 0)
 
 def tslsr(image):
     """
